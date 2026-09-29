@@ -4,109 +4,9 @@ from flask import Flask, render_template_string, request, jsonify
 
 app = Flask(__name__)
 
-QUESTIONS = {
-    "علم": {
-        "آسان": [
-            {"q": "آب از چه عناصری ساخته شده؟", "options": ["هیدروژن و اکسیژن", "کربن و اکسیژن", "نیتروژن و هیدروژن", "آهن و اکسیژن"], "answer": "هیدروژن و اکسیژن"},
-            {"q": "خورشید چه نوع جرم آسمانی است؟", "options": ["ستاره", "سیاره", "قمر", "کهکشان"], "answer": "ستاره"},
-            {"q": "بزرگ‌ترین سیاره منظومه شمسی؟", "options": ["مشتری", "زحل", "زمین", "نپتون"], "answer": "مشتری"},
-            {"q": "چند سیاره در منظومه شمسی وجود دارد؟", "options": ["۸", "۷", "۹", "۱۰"], "answer": "۸"},
-        ],
-        "متوسط": [
-            {"q": "سرعت نور چقدر است؟", "options": ["۳۰۰,۰۰۰ کیلومتر بر ثانیه", "۱۵۰,۰۰۰", "۵۰۰,۰۰۰", "۱,۰۰۰,۰۰۰"], "answer": "۳۰۰,۰۰۰ کیلومتر بر ثانیه"},
-            {"q": "اتم از چه ذراتی ساخته شده؟", "options": ["پروتون، نوترون، الکترون", "فقط پروتون", "فقط الکترون", "نوترون و فوتون"], "answer": "پروتون، نوترون، الکترون"},
-        ],
-        "سخت": [
-            {"q": "نظریه نسبیت از کیست؟", "options": ["آلبرت اینشتین", "ایزاک نیوتن", "گالیله", "استیون هاوکینگ"], "answer": "آلبرت اینشتین"},
-        ]
-    },
-    "جغرافیا": {
-        "آسان": [
-            {"q": "پایتخت ایران کجاست؟", "options": ["تهران", "اصفهان", "شیراز", "مشهد"], "answer": "تهران"},
-            {"q": "بزرگ‌ترین اقیانوس جهان؟", "options": ["آرام", "اطلس", "هند", "منجمد شمالی"], "answer": "آرام"},
-            {"q": "بلندترین قله جهان؟", "options": ["اورست", "دماوند", "آلپ", "کیلیمانجارو"], "answer": "اورست"},
-        ],
-        "متوسط": [
-            {"q": "طولانی‌ترین رودخانه جهان؟", "options": ["نیل", "آمازون", "می‌سی‌سی‌پی", "یانگ‌تسه"], "answer": "نیل"},
-            {"q": "کوچک‌ترین کشور جهان؟", "options": ["واتیکان", "موناکو", "سن مارینو", "مالت"], "answer": "واتیکان"},
-        ],
-        "سخت": [
-            {"q": "عمیق‌ترین نقطه اقیانوس‌ها؟", "options": ["گودال ماریانا", "گودال پورتوریکو", "گودال جاوه", "گودال آتاکاما"], "answer": "گودال ماریانا"},
-        ]
-    },
-    "تاریخ": {
-        "آسان": [
-            {"q": "کوروش کبیر بنیان‌گذار کدام امپراتوری بود؟", "options": ["هخامنشیان", "ساسانیان", "اشکانیان", "صفویان"], "answer": "هخامنشیان"},
-            {"q": "جنگ جهانی دوم در چه سالی تمام شد؟", "options": ["۱۹۴۵", "۱۹۴۰", "۱۹۵۰", "۱۹۳۹"], "answer": "۱۹۴۵"},
-        ],
-        "متوسط": [
-            {"q": "انقلاب اسلامی ایران در چه سالی پیروز شد؟", "options": ["۱۳۵۷", "۱۳۵۰", "۱۳۶۰", "۱۳۴۵"], "answer": "۱۳۵۷"},
-        ],
-        "سخت": [
-            {"q": "دیوار بزرگ چین در چه دوره‌ای ساخته شد؟", "options": ["چین باستان", "قرون وسطی", "رنسانس", "قرن ۱۹"], "answer": "چین باستان"},
-        ]
-    },
-    "ادبیات": {
-        "آسان": [
-            {"q": "حافظ شاعر کدام شهر است؟", "options": ["شیراز", "اصفهان", "تهران", "تبریز"], "answer": "شیراز"},
-            {"q": "شاهنامه اثر کیست؟", "options": ["فردوسی", "سعدی", "حافظ", "مولانا"], "answer": "فردوسی"},
-        ],
-        "متوسط": [
-            {"q": "مولانا اهل کدام شهر بود؟", "options": ["بلخ", "شیراز", "تبریز", "اصفهان"], "answer": "بلخ"},
-        ],
-        "سخت": [
-            {"q": "کدام شاعر «پدر شعر نو» لقب گرفته؟", "options": ["نیما یوشیج", "شهریار", "پروین اعتصامی", "اخوان ثالث"], "answer": "نیما یوشیج"},
-        ]
-    },
-    "ریاضی": {
-        "آسان": [
-            {"q": "۲ + ۲ × ۲ = ?", "options": ["۶", "۸", "۴", "۱۰"], "answer": "۶"},
-            {"q": "جذر ۱۶ چند است؟", "options": ["۴", "۸", "۲", "۶"], "answer": "۴"},
-        ],
-        "متوسط": [
-            {"q": "عدد پی (π) تقریباً چقدر است؟", "options": ["۳.۱۴", "۲.۱۴", "۴.۱۴", "۱.۱۴"], "answer": "۳.۱۴"},
-        ],
-        "سخت": [
-            {"q": "مشتق x² چیست؟", "options": ["2x", "x", "2", "x²"], "answer": "2x"},
-        ]
-    },
-    "سلامت": {
-        "آسان": [
-            {"q": "چند ساعت خواب برای بزرگسالان لازم است؟", "options": ["۷-۸ ساعت", "۴-۵ ساعت", "۱۰-۱۲ ساعت", "۳-۴ ساعت"], "answer": "۷-۸ ساعت"},
-            {"q": "کدام ویتامین از نور خورشید گرفته می‌شود؟", "options": ["ویتامین D", "ویتامین C", "ویتامین A", "ویتامین B"], "answer": "ویتامین D"},
-        ],
-        "متوسط": [
-            {"q": "کدام میوه بیشترین ویتامین C را دارد؟", "options": ["پرتقال", "سیب", "موز", "انگور"], "answer": "پرتقال"},
-        ],
-        "سخت": [
-            {"q": "کدام عضو بدن انسولین تولید می‌کند؟", "options": ["لوزالمعده", "کبد", "کلیه", "قلب"], "answer": "لوزالمعده"},
-        ]
-    },
-    "فناوری": {
-        "آسان": [
-            {"q": "CPU مخفف چیست؟", "options": ["Central Processing Unit", "Computer Personal Unit", "Central Program Unit", "Computer Processing Unit"], "answer": "Central Processing Unit"},
-            {"q": "کدام شرکت ویندوز را ساخته؟", "options": ["مایکروسافت", "اپل", "گوگل", "سامسونگ"], "answer": "مایکروسافت"},
-        ],
-        "متوسط": [
-            {"q": "هوش مصنوعی مخفف چیست؟", "options": ["AI", "ML", "DL", "IT"], "answer": "AI"},
-        ],
-        "سخت": [
-            {"q": "بنیان‌گذار مایکروسافت کیست؟", "options": ["بیل گیتس", "استیو جابز", "مارک زاکربرگ", "ایلان ماسک"], "answer": "بیل گیتس"},
-        ]
-    },
-    "معلومات عمومی": {
-        "آسان": [
-            {"q": "چند رنگ در رنگین‌کمان وجود دارد؟", "options": ["۷", "۵", "۶", "۸"], "answer": "۷"},
-            {"q": "کدام حیوان بزرگ‌ترین پستاندار جهان است؟", "options": ["نهنگ آبی", "فیل", "زرافه", "کرگدن"], "answer": "نهنگ آبی"},
-        ],
-        "متوسط": [
-            {"q": "سریع‌ترین حیوان خشکی؟", "options": ["یوزپلنگ", "شیر", "اسب", "آهو"], "answer": "یوزپلنگ"},
-        ],
-        "سخت": [
-            {"q": "کدام کشور بیشترین جزیره را دارد؟", "options": ["سوئد", "اندونزی", "فیلیپین", "ژاپن"], "answer": "سوئد"},
-        ]
-    }
-}
+# بارگذاری سوالات از فایل
+with open('questions_generated.json', 'r', encoding='utf-8') as f:
+    QUESTIONS = json.load(f)
 
 HTML = """
 <!DOCTYPE html>
@@ -191,7 +91,7 @@ HTML = """
         .result { text-align: center; padding: 20px; }
         .result h2 { color: #333; margin-bottom: 15px; }
         .result .score { font-size: 48px; color: #667eea; font-weight: bold; }
-        input {
+        input[type="text"], input[type="number"] {
             width: 100%;
             padding: 14px;
             border: 2px solid #ddd;
@@ -221,12 +121,13 @@ HTML = """
         let playerName = '';
         let selectedCategory = '';
         let selectedLevel = '';
+        let questionCount = 5;
 
         function showCategories() {
             playerName = document.getElementById('playerName').value.trim();
             if (!playerName) { alert('اسمت رو بنویس!'); return; }
             
-            const categories = ['علم', 'جغرافیا', 'تاریخ', 'ادبیات', 'ریاضی', 'سلامت', 'فناوری', 'معلومات عمومی'];
+            const categories = ['علم', 'جغرافیا', 'تاریخ', 'ادبیات', 'ریاضی', 'سلامت', 'فناوری', 'انگلیسی', 'معلومات عمومی'];
             document.getElementById('content').innerHTML = `
                 <h2>📚 دسته‌بندی رو انتخاب کن:</h2>
                 <div class="grid" id="catGrid">
@@ -252,18 +153,39 @@ HTML = """
             `;
         }
 
-        async function selectLevel(el, lvl) {
+        function selectLevel(el, lvl) {
             document.querySelectorAll('#lvlGrid .grid-item').forEach(i => i.classList.remove('selected'));
             el.classList.add('selected');
             selectedLevel = lvl;
-            setTimeout(startGame, 300);
+            setTimeout(showQuestionCount, 300);
+        }
+
+        function showQuestionCount() {
+            document.getElementById('content').innerHTML = `
+                <h2>🔢 چند سوال می‌خوای؟</h2>
+                <p style="text-align:center; color:#666; margin-bottom:15px;">از ۱ تا ۱۰۰ انتخاب کن</p>
+                <input type="number" id="qCount" min="1" max="100" value="5">
+                <button class="btn" onclick="startGame()">شروع بازی</button>
+            `;
         }
 
         async function startGame() {
+            const countInput = document.getElementById('qCount').value;
+            questionCount = parseInt(countInput);
+            
+            if (questionCount < 1 || questionCount > 100) {
+                alert('لطفاً عددی بین ۱ تا ۱۰۰ وارد کن!');
+                return;
+            }
+            
             const res = await fetch('/get-questions', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({category: selectedCategory, level: selectedLevel})
+                body: JSON.stringify({
+                    category: selectedCategory, 
+                    level: selectedLevel,
+                    count: questionCount
+                })
             });
             const data = await res.json();
             questions = data.questions;
@@ -312,11 +234,13 @@ HTML = """
         }
 
         function showResult() {
+            const maxScore = questions.length * 10;
             document.getElementById('content').innerHTML = `
                 <div class="result">
                     <h2>🎉 ${playerName} جان، تموم شد!</h2>
                     <div class="score">${score}</div>
-                    <p style="color:#666; margin:15px 0;">امتیازت از ${questions.length * 10}</p>
+                    <p style="color:#666; margin:15px 0;">امتیازت از ${maxScore}</p>
+                    <p style="color:#667eea; margin-bottom:15px;">درس: ${selectedCategory}</p>
                     <button class="btn" onclick="location.reload()">دوباره بازی کن</button>
                 </div>
             `;
@@ -335,9 +259,17 @@ def get_questions():
     data = request.get_json()
     category = data.get('category', 'علم')
     level = data.get('level', 'آسان')
+    count = data.get('count', 5)
     
     all_q = QUESTIONS.get(category, {}).get(level, [])
-    selected = random.sample(all_q, min(5, len(all_q)))
+    
+    if count > len(all_q):
+        count = len(all_q)
+    
+    if count == 0:
+        return jsonify({'questions': []})
+    
+    selected = random.sample(all_q, count)
     for q in selected:
         random.shuffle(q['options'])
     
